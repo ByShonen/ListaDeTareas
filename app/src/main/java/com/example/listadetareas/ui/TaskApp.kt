@@ -8,15 +8,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.listadetareas.data.TaskViewModel
 import com.example.listadetareas.ui.components.BottomNavigationBar
 import com.example.listadetareas.ui.components.DrawerContent
+import com.example.listadetareas.ui.screens.TaskListScreen
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskApp() {
+fun TaskApp(viewModel: TaskViewModel) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val navController = rememberNavController()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -42,7 +48,7 @@ fun TaskApp() {
                 BottomNavigationBar()
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = { /* Acción para agregar tarea */ }) {
+                FloatingActionButton(onClick = { navController.navigate("add_task") }) {
                     Icon(
                         imageVector = Icons.Default.Add,
                         contentDescription = "Agregar tarea"
@@ -50,7 +56,21 @@ fun TaskApp() {
                 }
             }
         ) { innerPadding ->
-            MainContent(modifier = Modifier.padding(innerPadding))
+            NavHost(
+                navController = navController,
+                startDestination = "task_list",
+                modifier = Modifier.padding(innerPadding)
+            ) {
+                composable("task_list") {
+                    TaskListScreen(viewModel = viewModel)
+                }
+                composable("add_task") {
+                    AddTaskScreen(
+                        viewModel = viewModel,
+                        onTaskAdded = { navController.popBackStack() }
+                    )
+                }
+            }
         }
     }
 }
